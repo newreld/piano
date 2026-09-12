@@ -17,8 +17,16 @@ export interface Song extends SongMeta {
   notes: NoteEvent[];
 }
 
+// import.meta.env.BASE_URL (not a hardcoded leading "/") so these still
+// resolve correctly when the app is deployed under a sub-path, e.g. GitHub
+// Pages project sites (https://<user>.github.io/<repo>/) — Vite only
+// rewrites asset references it can see in index.html/CSS for `base`, not
+// arbitrary runtime string literals like these.
+const base = import.meta.env.BASE_URL;
+
 export const SONG_LIBRARY: SongMeta[] = [
-  { id: 'twinkle-twinkle', title: 'Twinkle Twinkle Little Star', musicXmlUrl: '/songs/twinkle-twinkle.xml' },
-  { id: 'hot-cross-buns', title: 'Hot Cross Buns', musicXmlUrl: '/songs/hot-cross-buns.xml' },
-  { id: 'mary-had-a-little-lamb', title: 'Mary Had a Little Lamb', musicXmlUrl: '/songs/mary-had-a-little-lamb.xml' },
+  { id: 'twinkle-twinkle', title: 'Twinkle Twinkle Little Star', musicXmlUrl: `${base}songs/twinkle-twinkle.xml` },
+  { id: 'hot-cross-buns', title: 'Hot Cross Buns', musicXmlUrl: `${base}songs/hot-cross-buns.xml` },
+  { id: 'mary-had-a-little-lamb', title: 'Mary Had a Little Lamb', musicXmlUrl: `${base}songs/mary-had-a-little-lamb.xml` },
+  { id: 'ode-to-joy', title: 'Ode to Joy (Simplified)', musicXmlUrl: `${base}songs/ode-to-joy.xml` },
 ];
