@@ -15,7 +15,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-source.svg'],
       // Lets the service worker be exercised against the dev server too,
       // not just a production build — this app is verified live via a
       // browser preview rather than a separate build+serve step.
