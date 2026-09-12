@@ -26,8 +26,8 @@ export default defineConfig(({ mode }) => ({
         name: 'Little Piano',
         short_name: 'Little Piano',
         description: 'Learn simple melodies on a friendly on-screen piano.',
-        theme_color: '#ff8c42',
-        background_color: '#fff6e9',
+        theme_color: '#e8834a',
+        background_color: '#f7f4ee',
         display: 'standalone',
         start_url: BASE,
         scope: BASE,
@@ -51,6 +51,25 @@ export default defineConfig(({ mode }) => ({
               cacheName: 'piano-samples',
               cacheableResponse: { statuses: [0, 200] },
               expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            // Google Fonts stylesheet (Playfair Display + Lato) — small and
+            // occasionally revalidated, in case font-serving URLs inside it
+            // change.
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts-stylesheets' },
+          },
+          {
+            // The actual font files the stylesheet above points to — these
+            // are immutable per-URL, so cache them long-term once fetched.
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },
         ],

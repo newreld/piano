@@ -143,4 +143,9 @@ export class Keyboard {
     const keyRect = el.getBoundingClientRect();
     return (keyRect.left + keyRect.width / 2 - boardRect.left) / boardRect.width;
   }
+
+  /** Actual rendered width (px) of a key, so the falling lane can match it exactly. */
+  keyWidthPx(pitch: string): number {
+    return this.keyEls.get(pitch)?.getBoundingClientRect().width ?? 0;
+  }
 }

@@ -1,4 +1,4 @@
-const COLORS = ['#ff8c42', '#2ec4b6', '#ffd8ae', '#3a3a4a', '#ffffff'];
+const COLORS = ['#e8834a', '#2ec4b6', '#f6d9bd', '#2a2a26', '#ffffff'];
 
 /** A quick, non-repeating confetti burst — decorative only, self-cleans up. */
 export function burstConfetti(container: HTMLElement, count = 20) {

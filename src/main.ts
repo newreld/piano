@@ -9,6 +9,11 @@ import { Notation } from './notation/notation';
 import { SONG_LIBRARY } from './song/types';
 import type { NoteEvent } from './song/types';
 
+// The app's own icon (design_src/Piano Icon.png, rasterized into
+// public/icon-*.png) — used wherever the design shows the app symbol,
+// rather than the 🎹 emoji glyph.
+const appIconUrl = `${import.meta.env.BASE_URL}icon-192.png`;
+
 const RANGE_STORAGE_KEY = 'littlePiano.keyRangeLabel';
 const SPEED_STORAGE_KEY = 'littlePiano.ballSpeedLabel';
 
@@ -48,55 +53,125 @@ function saveSpeed(label: string) {
   }
 }
 
+/** Builds a "N options, one active" segmented control. Returns the element and a setter to sync active state from outside (e.g. on load). */
+function buildSegmented<T extends { label: string }>(
+  options: T[],
+  initialLabel: string,
+  onSelect: (opt: T) => void,
+): HTMLDivElement {
+  const el = document.createElement('div');
+  el.className = 'segmented';
+  options.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.className = 'segmented-btn';
+    btn.textContent = opt.label;
+    btn.classList.toggle('segmented-btn-active', opt.label === initialLabel);
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.segmented-btn').forEach((b) => b.classList.remove('segmented-btn-active'));
+      btn.classList.add('segmented-btn-active');
+      onSelect(opt);
+    });
+    el.appendChild(btn);
+  });
+  return el;
+}
+
 const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = '';
 
 mountInstallHint(app);
 
-const header = document.createElement('header');
-header.className = 'app-header';
-header.innerHTML = `<h1>🎹 Little Piano</h1>`;
-app.appendChild(header);
+// ---------- Home screen ----------
 
-const rangePicker = document.createElement('div');
-rangePicker.className = 'range-picker';
-app.appendChild(rangePicker);
+const homeScreen = document.createElement('section');
+homeScreen.className = 'home-screen';
+app.appendChild(homeScreen);
 
-const speedPicker = document.createElement('div');
-speedPicker.className = 'range-picker';
-app.appendChild(speedPicker);
+const topBar = document.createElement('div');
+topBar.className = 'top-bar';
+homeScreen.appendChild(topBar);
 
-const picker = document.createElement('section');
-picker.className = 'song-picker';
-app.appendChild(picker);
+const rangeRow = document.createElement('div');
+rangeRow.className = 'picker-row';
+const rangeRowLabel = document.createElement('span');
+rangeRowLabel.className = 'picker-row-label';
+rangeRowLabel.textContent = 'Keyboard';
+rangeRow.appendChild(rangeRowLabel);
+topBar.appendChild(rangeRow);
+
+const speedRow = document.createElement('div');
+speedRow.className = 'picker-row';
+const speedRowLabel = document.createElement('span');
+speedRowLabel.className = 'picker-row-label';
+speedRowLabel.textContent = 'Tempo';
+speedRow.appendChild(speedRowLabel);
+topBar.appendChild(speedRow);
+
+const hero = document.createElement('div');
+hero.className = 'hero';
+hero.innerHTML = `<img class="hero-icon" src="${appIconUrl}" alt="" /><h1 class="hero-title">Piano</h1>`;
+homeScreen.appendChild(hero);
+
+const shelf = document.createElement('div');
+shelf.className = 'shelf';
+homeScreen.appendChild(shelf);
 
 const loadingNotice = document.createElement('div');
 loadingNotice.className = 'loading-notice';
 loadingNotice.textContent = '🎹 Loading piano sounds…';
-picker.appendChild(loadingNotice);
+shelf.appendChild(loadingNotice);
+
+const carousel = document.createElement('div');
+carousel.className = 'carousel';
+shelf.appendChild(carousel);
+
+const freePlayCard = document.createElement('button');
+freePlayCard.className = 'card';
+freePlayCard.disabled = true;
+freePlayCard.innerHTML = `<img class="card-icon" src="${appIconUrl}" alt="" /><div class="card-title">Piano</div><div class="card-subtitle">Free Play</div>`;
+freePlayCard.addEventListener('click', () => openFreePlay());
+carousel.appendChild(freePlayCard);
+
+const divider = document.createElement('div');
+divider.className = 'carousel-divider';
+carousel.appendChild(divider);
+
+const cardButtons: HTMLButtonElement[] = [freePlayCard];
+
+SONG_LIBRARY.forEach((song) => {
+  const card = document.createElement('button');
+  card.className = 'card';
+  card.disabled = true;
+  card.innerHTML = `<div class="card-icon">🎵</div><div class="card-title">${song.title}</div><div class="card-subtitle">${song.subtitle}</div>`;
+  card.addEventListener('click', () => openSong(song.id));
+  carousel.appendChild(card);
+  cardButtons.push(card);
+});
+
+// ---------- Play screen ----------
 
 const playScreen = document.createElement('section');
 playScreen.className = 'play-screen';
 playScreen.hidden = true;
 app.appendChild(playScreen);
 
-const backBtn = document.createElement('button');
-backBtn.className = 'back-btn';
-backBtn.textContent = '‹ Songs';
-playScreen.appendChild(backBtn);
+const songHeader = document.createElement('div');
+songHeader.className = 'song-header';
+playScreen.appendChild(songHeader);
+
+const homeIconBtn = document.createElement('button');
+homeIconBtn.className = 'song-header-emoji';
+homeIconBtn.innerHTML = `<img src="${appIconUrl}" alt="" />`;
+homeIconBtn.setAttribute('aria-label', 'Back to songs');
+songHeader.appendChild(homeIconBtn);
 
 const songTitleEl = document.createElement('h2');
 songTitleEl.className = 'song-title';
-playScreen.appendChild(songTitleEl);
+songHeader.appendChild(songTitleEl);
 
 const notationContainer = document.createElement('div');
 notationContainer.className = 'notation-container';
 playScreen.appendChild(notationContainer);
-
-const playHint = document.createElement('div');
-playHint.className = 'play-hint';
-playHint.textContent = '🎯 Tap the glowing key when the ball reaches the line!';
-playScreen.appendChild(playHint);
 
 // Keyboard and falling notes share this one container so a key's x-position
 // means the same thing in both — see FallingNotes' class doc for why that
@@ -105,6 +180,12 @@ playScreen.appendChild(playHint);
 const pianoStage = document.createElement('div');
 pianoStage.className = 'piano-stage';
 playScreen.appendChild(pianoStage);
+
+// Behind everything else in the stage — the distinct background band the
+// keyboard sits on, per the source design.
+const pianoStageShelf = document.createElement('div');
+pianoStageShelf.className = 'piano-stage-shelf';
+pianoStage.appendChild(pianoStageShelf);
 
 const completeBanner = document.createElement('div');
 completeBanner.className = 'complete-banner';
@@ -119,72 +200,39 @@ completeBanner.innerHTML = `<div class="complete-card">
 </div>`;
 playScreen.appendChild(completeBanner);
 
-const songButtons: HTMLButtonElement[] = [];
-
-SONG_LIBRARY.forEach((song) => {
-  const btn = document.createElement('button');
-  btn.className = 'song-btn';
-  btn.textContent = song.title;
-  btn.disabled = true;
-  btn.addEventListener('click', () => openSong(song.id));
-  picker.appendChild(btn);
-  songButtons.push(btn);
-});
+// ---------- Wiring ----------
 
 const engine = new AudioEngine();
 engine.whenLoaded().then(() => {
   loadingNotice.hidden = true;
-  songButtons.forEach((btn) => (btn.disabled = false));
+  cardButtons.forEach((btn) => (btn.disabled = false));
 });
+
 const initialRange = loadSavedRange();
 const keyboard = new Keyboard(pianoStage, initialRange);
 const fallingNotes = new FallingNotes(pianoStage, keyboard, () => engine.now());
 const notation = new Notation(notationContainer);
 
-const rangeLabel = document.createElement('span');
-rangeLabel.className = 'range-picker-label';
-rangeLabel.textContent = 'Keyboard size:';
-rangePicker.appendChild(rangeLabel);
-
-const initialLabel = RANGE_OPTIONS.find((o) => o.range === initialRange)?.label ?? RANGE_OPTIONS[0].label;
-
-RANGE_OPTIONS.forEach(({ label, range }) => {
-  const btn = document.createElement('button');
-  btn.className = 'range-btn';
-  btn.textContent = label;
-  btn.classList.toggle('range-btn-active', label === initialLabel);
-  btn.addEventListener('click', () => {
+const initialRangeLabel = RANGE_OPTIONS.find((o) => o.range === initialRange)?.label ?? RANGE_OPTIONS[0].label;
+rangeRow.appendChild(
+  buildSegmented(RANGE_OPTIONS, initialRangeLabel, ({ range, label }) => {
     keyboard.setRange(range);
     saveRange(label);
-    rangePicker.querySelectorAll('.range-btn').forEach((el) => el.classList.remove('range-btn-active'));
-    btn.classList.add('range-btn-active');
-  });
-  rangePicker.appendChild(btn);
-});
-
-const speedLabel = document.createElement('span');
-speedLabel.className = 'range-picker-label';
-speedLabel.textContent = 'Tempo:';
-speedPicker.appendChild(speedLabel);
+  }),
+);
 
 const initialBpm = loadSavedBpm();
 let secondsPerBeat = 60 / initialBpm;
 const initialSpeedLabel = TEMPO_OPTIONS.find((o) => o.bpm === initialBpm)?.label ?? TEMPO_OPTIONS[1].label;
-
-TEMPO_OPTIONS.forEach(({ label, bpm }) => {
-  const btn = document.createElement('button');
-  btn.className = 'range-btn';
-  btn.textContent = label;
-  btn.classList.toggle('range-btn-active', label === initialSpeedLabel);
-  btn.addEventListener('click', () => {
+speedRow.appendChild(
+  buildSegmented(TEMPO_OPTIONS, initialSpeedLabel, ({ bpm, label }) => {
     secondsPerBeat = 60 / bpm;
     saveSpeed(label);
-    speedPicker.querySelectorAll('.range-btn').forEach((el) => el.classList.remove('range-btn-active'));
-    btn.classList.add('range-btn-active');
-  });
-  speedPicker.appendChild(btn);
-});
+  }),
+);
 
+type Mode = 'song' | 'freeplay';
+let mode: Mode = 'song';
 let currentNotes: NoteEvent[] = [];
 let currentIndex = 0;
 
@@ -206,7 +254,8 @@ function showExpectedNote() {
   const note = currentNotes[currentIndex];
   if (!note) return;
   keyboard.setExpected(note.pitch);
-  fallingNotes.showNote(note.pitch, fallDurationFor(currentIndex));
+  const nextNote = currentNotes[currentIndex + 1];
+  fallingNotes.showNote(note.pitch, fallDurationFor(currentIndex), nextNote?.pitch);
 }
 
 function onSongComplete() {
@@ -217,22 +266,41 @@ function onSongComplete() {
   if (card) burstConfetti(card);
 }
 
+function showHome() {
+  playScreen.hidden = true;
+  homeScreen.hidden = false;
+}
+
+function enterPlayScreen() {
+  homeScreen.hidden = true;
+  playScreen.hidden = false;
+  completeBanner.hidden = true;
+}
+
 async function openSong(id: string) {
   const meta = SONG_LIBRARY.find((s) => s.id === id);
   if (!meta) return;
 
+  mode = 'song';
   await engine.start();
 
-  picker.hidden = true;
-  rangePicker.hidden = true;
-  speedPicker.hidden = true;
-  playScreen.hidden = false;
-  completeBanner.hidden = true;
+  enterPlayScreen();
+  notationContainer.hidden = false;
   songTitleEl.textContent = meta.title;
 
   currentNotes = await notation.load(meta.musicXmlUrl);
   currentIndex = 0;
   showExpectedNote();
+}
+
+async function openFreePlay() {
+  mode = 'freeplay';
+  await engine.start();
+
+  enterPlayScreen();
+  notationContainer.hidden = true;
+  songTitleEl.textContent = 'Free Play';
+  keyboard.setExpected(null);
 }
 
 function restartSong() {
@@ -244,6 +312,7 @@ function restartSong() {
 
 keyboard.setOnPress((pitch) => {
   engine.play(pitch);
+  if (mode === 'freeplay') return;
   if (currentIndex >= currentNotes.length) return;
 
   const expected = currentNotes[currentIndex];
@@ -265,14 +334,7 @@ keyboard.setOnPress((pitch) => {
   }
 });
 
-function showPicker() {
-  playScreen.hidden = true;
-  picker.hidden = false;
-  rangePicker.hidden = false;
-  speedPicker.hidden = false;
-}
-
-backBtn.addEventListener('click', showPicker);
+homeIconBtn.addEventListener('click', showHome);
 
 completeBanner.querySelector('#play-again-btn')!.addEventListener('click', restartSong);
-completeBanner.querySelector('#choose-song-btn')!.addEventListener('click', showPicker);
+completeBanner.querySelector('#choose-song-btn')!.addEventListener('click', showHome);

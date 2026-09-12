@@ -10,6 +10,8 @@ export interface NoteEvent {
 export interface SongMeta {
   id: string;
   title: string;
+  /** Short descriptor shown under the title on the song card (e.g. origin/composer). */
+  subtitle: string;
   musicXmlUrl: string;
 }
 
@@ -25,8 +27,8 @@ export interface Song extends SongMeta {
 const base = import.meta.env.BASE_URL;
 
 export const SONG_LIBRARY: SongMeta[] = [
-  { id: 'twinkle-twinkle', title: 'Twinkle Twinkle Little Star', musicXmlUrl: `${base}songs/twinkle-twinkle.xml` },
-  { id: 'hot-cross-buns', title: 'Hot Cross Buns', musicXmlUrl: `${base}songs/hot-cross-buns.xml` },
-  { id: 'mary-had-a-little-lamb', title: 'Mary Had a Little Lamb', musicXmlUrl: `${base}songs/mary-had-a-little-lamb.xml` },
-  { id: 'ode-to-joy', title: 'Ode to Joy (Simplified)', musicXmlUrl: `${base}songs/ode-to-joy.xml` },
+  { id: 'twinkle-twinkle', title: 'Twinkle Twinkle Little Star', subtitle: 'Traditional', musicXmlUrl: `${base}songs/twinkle-twinkle.xml` },
+  { id: 'hot-cross-buns', title: 'Hot Cross Buns', subtitle: 'Traditional', musicXmlUrl: `${base}songs/hot-cross-buns.xml` },
+  { id: 'mary-had-a-little-lamb', title: 'Mary Had a Little Lamb', subtitle: 'Traditional', musicXmlUrl: `${base}songs/mary-had-a-little-lamb.xml` },
+  { id: 'ode-to-joy', title: 'Ode to Joy (Simplified)', subtitle: 'Beethoven', musicXmlUrl: `${base}songs/ode-to-joy.xml` },
 ];

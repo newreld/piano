@@ -1,13 +1,25 @@
 :root {
-  --bg: #fff6e9;
-  --ink: #3a3a4a;
-  --accent: #ff8c42;
-  --accent-soft: #ffd8ae;
+  /* Exact values sampled from the user's Figma exports (design_src/) —
+     see piano_project_status memory for how these were extracted (the
+     SVGs are flattened raster+vector mixes; colors were pulled from the
+     underlying fill/stroke/gradient-stop attributes, not eyeballed). */
+  --bg: #faf9f4;
+  --shelf-bg: #e9e8e1;
+  --ink: #000000;
+  --ink-muted: #86837a;
+  --accent: #ff6200;
+  --accent-soft: #f6d9bd;
   --success: #2ec4b6;
-  --key-white: #ffffff;
-  --key-white-edge: #e3ddd0;
-  --key-black: #2b2b3a;
-  --shadow: rgba(58, 58, 74, 0.18);
+  --card-bg: #ffffff;
+  --key-white-top: #ffffff;
+  --key-white-bottom: #f9f8f6;
+  --key-black-top: #3e3f43;
+  --key-black-bottom: #000000;
+  --chrome-active-bg: #d2d0bd;
+  --chrome-border: #d2d0bd;
+  --shadow: rgba(42, 42, 38, 0.14);
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Lato', -apple-system, system-ui, sans-serif;
   color-scheme: light;
 }
 
@@ -29,7 +41,7 @@ body {
 
 body {
   margin: 0;
-  font-family: -apple-system, 'SF Pro Rounded', system-ui, sans-serif;
+  font-family: var(--font-sans);
   background: var(--bg);
   color: var(--ink);
   overscroll-behavior: none;
@@ -70,103 +82,167 @@ body {
   cursor: pointer;
 }
 
-.app-header {
-  text-align: center;
-  padding: 1.2rem 1rem 0.4rem;
-}
+/* ---------- Home screen ---------- */
 
-.app-header h1 {
-  margin: 0;
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-/* ---------- Keyboard-size picker ---------- */
-
-.range-picker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  padding: 0 1rem;
-}
-
-.range-picker-label {
-  font-weight: 700;
-  color: var(--ink);
-  opacity: 0.7;
-  font-size: 0.95rem;
-}
-
-.range-btn {
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 999px;
-  background: white;
-  color: var(--ink);
-  box-shadow: 0 3px 0 var(--key-white-edge);
-  cursor: pointer;
-  transition: transform 0.08s ease, background 0.1s ease, color 0.1s ease;
-}
-
-.range-btn:active {
-  transform: translateY(2px);
-}
-
-.range-btn-active {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 3px 0 #c96a26;
-}
-
-/* ---------- Song picker ---------- */
-
-.song-picker {
+.home-screen {
   flex: 1;
   display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.1rem 1.25rem 0;
   flex-wrap: wrap;
-  align-content: center;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.picker-row-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  opacity: 0.5;
+}
+
+.segmented {
+  display: inline-flex;
+  background: transparent;
+  border: 1px solid var(--chrome-border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.segmented-btn {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.segmented-btn-active {
+  background: var(--chrome-active-bg);
+  color: var(--ink);
+}
+
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  padding: 2rem;
+  gap: 0.4rem;
+  padding: 1.5rem;
+}
+
+.hero-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 6vw, 3.25rem);
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.shelf {
+  background: var(--shelf-bg);
+  padding: 48px;
 }
 
 .loading-notice {
-  flex-basis: 100%;
   text-align: center;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--ink);
-  opacity: 0.6;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  padding-bottom: 0.5rem;
 }
 
-.song-btn {
-  font-size: 1.3rem;
-  font-weight: 700;
-  padding: 1.6rem 2rem;
-  min-width: 220px;
+.carousel {
+  display: flex;
+  gap: 32px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: 168px;
+  height: 168px;
+  background: var(--card-bg);
   border: none;
-  border-radius: 24px;
-  background: white;
-  color: var(--ink);
-  box-shadow: 0 6px 0 var(--key-white-edge), 0 10px 18px var(--shadow);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  text-align: left;
   transition: transform 0.08s ease;
 }
 
-.song-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-  box-shadow: 0 6px 0 var(--key-white-edge);
+/* Thin separator after the Free Play card, before the song cards. */
+.carousel-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.1);
 }
 
-.song-btn:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 var(--key-white-edge), 0 4px 10px var(--shadow);
+.card:active {
+  transform: translateY(2px);
+}
+
+.card:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+.card-icon {
+  font-size: 1.6rem;
+}
+
+img.card-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.card-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--ink-muted);
 }
 
 /* ---------- Play screen ---------- */
@@ -175,45 +251,55 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 1rem 1.5rem;
+  /* Measured directly against design_src/App_Piano - Highlight.svg at its
+     native 1194x834: the icon sits ~65px down, not flush to the top. */
+  padding: 2.5rem 1rem 1.5rem;
   position: relative;
 }
 
-.back-btn {
-  align-self: flex-start;
-  font-size: 1.1rem;
-  font-weight: 700;
-  padding: 0.5rem 1.1rem;
+.song-header {
+  text-align: center;
+  /* Bottom margin = the gap from the title's baseline area down to the
+     notation (~52px in the source design). */
+  margin: 1.5rem 0 3.25rem;
+}
+
+/* Doubles as the "back to home" button — the design has no separate back
+   control, just the tappable piano icon above the title. */
+.song-header-emoji {
+  display: inline-block;
+  /* Gap from icon to title measures ~64px in the source design. */
+  margin-bottom: 4rem;
   border: none;
-  border-radius: 999px;
-  background: white;
-  color: var(--ink);
-  box-shadow: 0 3px 0 var(--key-white-edge);
+  background: none;
+  padding: 0.25rem;
   cursor: pointer;
 }
 
+.song-header-emoji img {
+  /* Matches the design's measured 42x42 icon (same as .hero-icon). */
+  width: 42px;
+  height: 42px;
+  display: block;
+}
+
 .song-title {
-  text-align: center;
-  margin: 0.3rem 0 0.6rem;
-  font-size: 1.3rem;
-}
-
-.notation-container {
-  background: white;
-  border-radius: 18px;
-  padding: 0.5rem 1rem;
-  box-shadow: 0 4px 14px var(--shadow);
-  margin-bottom: 0.75rem;
-  overflow-x: auto;
-}
-
-.play-hint {
-  text-align: center;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  margin: 0;
+  font-size: 2rem;
   color: var(--ink);
-  opacity: 0.55;
-  margin-bottom: 0.3rem;
+}
+
+/* The sheet music floats directly on the page background — the source
+   design has no card/box behind it (confirmed by inspecting the SVG's own
+   rects: nothing white sits behind the note/staff paths). */
+.notation-container {
+  width: 100%;
+  max-width: 790px;
+  margin: 0 auto 0.5rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
 }
 
 /*
@@ -223,15 +309,35 @@ body {
  * containers (e.g. a capped-width keyboard inside a wider stage) is what
  * caused tokens to drift away from their key on wide/iPad-landscape
  * screens — see FallingNotes' class doc.
+ *
+ * Per the source design, the keyboard dominates the screen (~48% of
+ * height) and runs edge-to-edge — the negative margins cancel out
+ * .play-screen's own horizontal padding so it isn't inset like the
+ * notation/title above it.
  */
 .piano-stage {
+  --keyboard-h: clamp(240px, 44vh, 400px);
   position: relative;
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  /* Cancel .play-screen's own padding on all three open sides so the shelf
+     below reaches edge-to-edge AND flush with the true bottom of the
+     screen, matching the source design (no gap under the keyboard). */
+  margin: 0 -1rem -1.5rem;
   flex: 1;
-  min-height: 320px;
-  max-height: 480px;
+  min-height: 300px;
+  max-height: 720px;
+}
+
+/* The distinct background band behind the keyboard (same tone as the home
+   screen's card shelf), separating it from the plain page background the
+   notation/falling-note travel space sits on above it. */
+.piano-stage-shelf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Keyboard padding per spec: 2px top + 32px bottom beyond the keys. */
+  height: calc(var(--keyboard-h) + 34px);
+  background: var(--shelf-bg);
 }
 
 .falling-area {
@@ -241,37 +347,53 @@ body {
   pointer-events: none;
 }
 
+/* Current-key lane: 10%-opacity fill + a 50%-opacity stroke (per spec). */
 .falling-lane {
   position: absolute;
   top: 0;
-  background: linear-gradient(to bottom, rgba(255, 140, 66, 0), rgba(255, 140, 66, 0.18));
-  border-left: 2px dashed rgba(255, 140, 66, 0.4);
-  border-right: 2px dashed rgba(255, 140, 66, 0.4);
-  border-radius: 10px;
+  background: rgba(255, 98, 0, 0.1);
+  border: 1px solid rgba(255, 98, 0, 0.5);
+  border-radius: 16px 16px 0 0;
+}
+
+/* Next-key preview: same fill as the active lane, but a softer stroke and
+   a subtle top-inner-glow instead — "subtler than active" per spec. */
+.falling-lane-next {
+  border-color: rgba(255, 98, 0, 0.25);
+  box-shadow: inset 0 -10px 20px rgba(255, 98, 0, 0.15);
 }
 
 /* The landing zone: a persistent ring near the bottom of the active key —
-   the ball falls into it and waits there until the key is played. */
+   the ball falls into it and waits there until the key is played. Two
+   layers per the source design: a soft 10%-opacity fill plus a tighter
+   dashed 30%-opacity ring just inside it. */
 .target-ring {
   position: absolute;
   top: 0;
   left: 0;
-  width: 46px;
-  height: 46px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  border: 3px dashed rgba(255, 140, 66, 0.55);
-  background: rgba(255, 140, 66, 0.1);
+  background: rgba(255, 98, 0, 0.1);
+}
+
+.target-ring::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 98, 0, 0.3);
 }
 
 .falling-token {
   position: absolute;
   top: 0;
   left: 0;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffc38a, var(--accent));
-  box-shadow: 0 4px 10px var(--shadow), 0 0 0 4px rgba(255, 140, 66, 0.25);
+  background: radial-gradient(circle at 35% 30%, #ffa268, #cd611d);
+  box-shadow: 0 3px 8px var(--shadow);
   will-change: transform;
 }
 
@@ -286,10 +408,10 @@ body {
 @keyframes waiting-pulse {
   0%,
   100% {
-    box-shadow: 0 4px 10px var(--shadow), 0 0 0 4px rgba(255, 140, 66, 0.3);
+    box-shadow: 0 3px 8px var(--shadow), 0 0 0 4px rgba(255, 98, 0, 0.3);
   }
   50% {
-    box-shadow: 0 4px 14px var(--shadow), 0 0 0 12px rgba(255, 140, 66, 0.05);
+    box-shadow: 0 3px 10px var(--shadow), 0 0 0 12px rgba(255, 98, 0, 0.05);
   }
 }
 
@@ -308,13 +430,13 @@ body {
   right: 0;
   bottom: 0;
   width: 100%;
-  height: clamp(140px, 26vh, 220px);
+  height: var(--keyboard-h);
 }
 
 .white-keys {
   display: flex;
   height: 100%;
-  gap: 4px;
+  gap: 8px;
 }
 
 .key {
@@ -322,34 +444,36 @@ body {
   transition: background 0.1s ease, transform 0.06s ease;
 }
 
+/* Flat, minimal styling per the source design — no 3D bezel/box-shadow
+   "lip", small corner radius rather than a rounded pill-key look. The
+   white key's shadow is a soft upward glow (negative y-offset), not a
+   drop shadow underneath. */
 .key-white {
   flex: 1;
-  background: var(--key-white);
-  border: 2px solid var(--key-white-edge);
-  border-radius: 0 0 14px 14px;
-  box-shadow: 0 6px 0 var(--key-white-edge);
+  background: linear-gradient(to bottom, var(--key-white-top), var(--key-white-bottom));
+  border: 1px solid #fff;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
 }
 
 .key-black {
   position: absolute;
   top: 0;
   height: 60%;
-  background: var(--key-black);
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 4px 0 #17171f;
+  background: linear-gradient(to bottom, var(--key-black-top), var(--key-black-bottom));
+  border: 1px solid #000;
+  border-radius: 0 0 4px 4px;
   z-index: 2;
 }
 
 .key-pressed.key-white {
   background: var(--accent-soft);
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 var(--key-white-edge);
+  transform: translateY(2px);
 }
 
 .key-pressed.key-black {
-  background: #4a4a63;
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #17171f;
+  background: linear-gradient(to bottom, #5a574f, #232320);
+  transform: translateY(2px);
 }
 
 .key-white.key-expected {
@@ -362,7 +486,7 @@ body {
     background: var(--accent-soft);
   }
   50% {
-    background: #ffc27a;
+    background: #f2c294;
   }
 }
 
@@ -373,10 +497,10 @@ body {
 @keyframes key-glow-black {
   0%,
   100% {
-    background: #6b4423;
+    background: linear-gradient(to bottom, #7a5636, #4a3520);
   }
   50% {
-    background: #8a5a30;
+    background: linear-gradient(to bottom, #96693f, #5f4526);
   }
 }
 
@@ -385,7 +509,7 @@ body {
 }
 
 .key-success.key-black {
-  background: #1f8a80;
+  background: linear-gradient(to bottom, #2ec4b6, #1f8a80);
 }
 
 /* ---------- Completion banner ---------- */
@@ -393,7 +517,7 @@ body {
 .complete-banner {
   position: absolute;
   inset: 0;
-  background: rgba(58, 58, 74, 0.35);
+  background: rgba(42, 42, 38, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -437,9 +561,11 @@ body {
 }
 
 .complete-text {
+  font-family: var(--font-serif);
   font-size: 1.8rem;
-  font-weight: 800;
+  font-weight: 600;
   margin: 0.5rem 0 1.5rem;
+  color: var(--ink);
 }
 
 .complete-actions {
@@ -451,6 +577,7 @@ body {
 
 .btn-primary,
 .btn-secondary {
+  font-family: var(--font-sans);
   font-size: 1.05rem;
   font-weight: 700;
   padding: 0.9rem 1.5rem;
