@@ -164,7 +164,7 @@ RANGE_OPTIONS.forEach(({ label, range }) => {
 
 const speedLabel = document.createElement('span');
 speedLabel.className = 'range-picker-label';
-speedLabel.textContent = 'Ball speed:';
+speedLabel.textContent = 'Tempo:';
 speedPicker.appendChild(speedLabel);
 
 const initialBpm = loadSavedBpm();
