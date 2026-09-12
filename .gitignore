@@ -13,6 +13,9 @@ dist-ssr
 dev-dist
 *.local
 
+# Local-only design source files (raw icon art, etc.) — never published.
+/design_src
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
