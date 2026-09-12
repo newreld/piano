@@ -4,7 +4,7 @@ import { burstConfetti } from './confetti';
 import { AudioEngine } from './audio/engine';
 import { Keyboard, RANGE_OPTIONS, DEFAULT_RANGE } from './keyboard/keyboard';
 import type { KeyRange } from './keyboard/keyboard';
-import { FallingNotes, SPEED_OPTIONS, DEFAULT_LEAD_TIME } from './falling-notes/falling-notes';
+import { FallingNotes, TEMPO_OPTIONS, DEFAULT_BPM } from './falling-notes/falling-notes';
 import { Notation } from './notation/notation';
 import { SONG_LIBRARY } from './song/types';
 import type { NoteEvent } from './song/types';
@@ -30,13 +30,13 @@ function saveRange(label: string) {
   }
 }
 
-function loadSavedLeadTime(): number {
+function loadSavedBpm(): number {
   try {
     const savedLabel = localStorage.getItem(SPEED_STORAGE_KEY);
-    const found = SPEED_OPTIONS.find((o) => o.label === savedLabel);
-    return found ? found.leadTimeSeconds : DEFAULT_LEAD_TIME;
+    const found = TEMPO_OPTIONS.find((o) => o.label === savedLabel);
+    return found ? found.bpm : DEFAULT_BPM;
   } catch {
-    return DEFAULT_LEAD_TIME;
+    return DEFAULT_BPM;
   }
 }
 
@@ -98,13 +98,13 @@ playHint.className = 'play-hint';
 playHint.textContent = '🎯 Tap the glowing key when the ball reaches the line!';
 playScreen.appendChild(playHint);
 
-const stage = document.createElement('div');
-stage.className = 'stage';
-playScreen.appendChild(stage);
-
-const keyboardContainer = document.createElement('div');
-keyboardContainer.className = 'keyboard-container';
-playScreen.appendChild(keyboardContainer);
+// Keyboard and falling notes share this one container so a key's x-position
+// means the same thing in both — see FallingNotes' class doc for why that
+// matters (two differently-capped-width containers is what caused tokens
+// to land beside the wrong key on wide screens).
+const pianoStage = document.createElement('div');
+pianoStage.className = 'piano-stage';
+playScreen.appendChild(pianoStage);
 
 const completeBanner = document.createElement('div');
 completeBanner.className = 'complete-banner';
@@ -137,8 +137,8 @@ engine.whenLoaded().then(() => {
   songButtons.forEach((btn) => (btn.disabled = false));
 });
 const initialRange = loadSavedRange();
-const keyboard = new Keyboard(keyboardContainer, initialRange);
-const fallingNotes = new FallingNotes(stage, keyboard, () => engine.now(), loadSavedLeadTime());
+const keyboard = new Keyboard(pianoStage, initialRange);
+const fallingNotes = new FallingNotes(pianoStage, keyboard, () => engine.now());
 const notation = new Notation(notationContainer);
 
 const rangeLabel = document.createElement('span');
@@ -167,16 +167,17 @@ speedLabel.className = 'range-picker-label';
 speedLabel.textContent = 'Ball speed:';
 speedPicker.appendChild(speedLabel);
 
-const initialLeadTime = loadSavedLeadTime();
-const initialSpeedLabel = SPEED_OPTIONS.find((o) => o.leadTimeSeconds === initialLeadTime)?.label ?? SPEED_OPTIONS[1].label;
+const initialBpm = loadSavedBpm();
+let secondsPerBeat = 60 / initialBpm;
+const initialSpeedLabel = TEMPO_OPTIONS.find((o) => o.bpm === initialBpm)?.label ?? TEMPO_OPTIONS[1].label;
 
-SPEED_OPTIONS.forEach(({ label, leadTimeSeconds }) => {
+TEMPO_OPTIONS.forEach(({ label, bpm }) => {
   const btn = document.createElement('button');
   btn.className = 'range-btn';
   btn.textContent = label;
   btn.classList.toggle('range-btn-active', label === initialSpeedLabel);
   btn.addEventListener('click', () => {
-    fallingNotes.setLeadTime(leadTimeSeconds);
+    secondsPerBeat = 60 / bpm;
     saveSpeed(label);
     speedPicker.querySelectorAll('.range-btn').forEach((el) => el.classList.remove('range-btn-active'));
     btn.classList.add('range-btn-active');
@@ -187,11 +188,25 @@ SPEED_OPTIONS.forEach(({ label, leadTimeSeconds }) => {
 let currentNotes: NoteEvent[] = [];
 let currentIndex = 0;
 
+// How long (seconds) the token should take to fall for note `index`,
+// driven by the actual gap between notes in the score (beats, from the
+// MusicXML) rather than a fixed constant — so a half-note's worth of space
+// before the next note takes visibly longer than a quarter-note's worth.
+// The first note gets a fixed 2-beat lead-in since there's no previous
+// note to measure a gap from.
+function fallDurationFor(index: number): number {
+  const note = currentNotes[index];
+  const prevBeat = index === 0 ? note.beat - 2 : currentNotes[index - 1].beat;
+  const gapBeats = Math.max(note.beat - prevBeat, 0.25);
+  const duration = gapBeats * secondsPerBeat;
+  return Math.min(Math.max(duration, 0.5), 5);
+}
+
 function showExpectedNote() {
   const note = currentNotes[currentIndex];
   if (!note) return;
   keyboard.setExpected(note.pitch);
-  fallingNotes.showNote(note.pitch);
+  fallingNotes.showNote(note.pitch, fallDurationFor(currentIndex));
 }
 
 function onSongComplete() {
@@ -239,15 +254,14 @@ keyboard.setOnPress((pitch) => {
   notation.advance();
 
   currentIndex += 1;
-  const indexAtAdvance = currentIndex;
+  // Advance immediately — no artificial pause. The next token's fall
+  // duration (fallDurationFor) already reflects the actual gap to this note
+  // in the score; tacking on a fixed delay here would throw off that
+  // proportion (e.g. a 2-beat gap no longer reading as ~2x a 1-beat gap).
   if (currentIndex < currentNotes.length) {
-    setTimeout(() => {
-      if (currentIndex === indexAtAdvance) showExpectedNote();
-    }, 350);
+    showExpectedNote();
   } else {
-    setTimeout(() => {
-      if (currentIndex === indexAtAdvance) onSongComplete();
-    }, 350);
+    onSongComplete();
   }
 });
 

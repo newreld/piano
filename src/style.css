@@ -216,27 +216,29 @@ body {
   margin-bottom: 0.3rem;
 }
 
-.stage {
+/*
+ * The keyboard and the falling notes are both absolutely-positioned
+ * children of this ONE shared box, so a key's x-position fraction means
+ * the same pixel offset in both places. Keeping them as separately-sized
+ * containers (e.g. a capped-width keyboard inside a wider stage) is what
+ * caused tokens to drift away from their key on wide/iPad-landscape
+ * screens — see FallingNotes' class doc.
+ */
+.piano-stage {
   position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
   flex: 1;
-  min-height: 160px;
-  max-height: 260px;
+  min-height: 320px;
+  max-height: 480px;
 }
 
 .falling-area {
   position: absolute;
   inset: 0;
-}
-
-.hit-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 6px;
-  border-radius: 3px;
-  background: repeating-linear-gradient(90deg, var(--accent) 0 16px, transparent 16px 28px);
-  opacity: 0.6;
+  /* Purely decorative — let taps pass through to the keyboard beneath it. */
+  pointer-events: none;
 }
 
 .falling-lane {
@@ -245,16 +247,28 @@ body {
   background: linear-gradient(to bottom, rgba(255, 140, 66, 0), rgba(255, 140, 66, 0.18));
   border-left: 2px dashed rgba(255, 140, 66, 0.4);
   border-right: 2px dashed rgba(255, 140, 66, 0.4);
-  border-radius: 10px 10px 0 0;
-  pointer-events: none;
+  border-radius: 10px;
+}
+
+/* The landing zone: a persistent ring near the bottom of the active key —
+   the ball falls into it and waits there until the key is played. */
+.target-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px dashed rgba(255, 140, 66, 0.55);
+  background: rgba(255, 140, 66, 0.1);
 }
 
 .falling-token {
   position: absolute;
   top: 0;
   left: 0;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #ffc38a, var(--accent));
   box-shadow: 0 4px 10px var(--shadow), 0 0 0 4px rgba(255, 140, 66, 0.25);
@@ -288,15 +302,12 @@ body {
 
 /* ---------- Keyboard ---------- */
 
-.keyboard-container {
-  display: flex;
-  justify-content: center;
-}
-
 .keyboard {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
-  max-width: 900px;
   height: clamp(140px, 26vh, 220px);
 }
 
@@ -341,31 +352,31 @@ body {
   box-shadow: 0 1px 0 #17171f;
 }
 
-.key-expected {
-  animation: glow 1s ease-in-out infinite;
+.key-white.key-expected {
+  animation: key-glow-white 1s ease-in-out infinite;
 }
 
-@keyframes glow {
+@keyframes key-glow-white {
   0%,
   100% {
-    box-shadow: 0 6px 0 var(--key-white-edge), 0 0 0 0 rgba(255, 140, 66, 0.55);
+    background: var(--accent-soft);
   }
   50% {
-    box-shadow: 0 6px 0 var(--key-white-edge), 0 0 0 10px rgba(255, 140, 66, 0);
+    background: #ffc27a;
   }
 }
 
 .key-black.key-expected {
-  animation: glow-black 1s ease-in-out infinite;
+  animation: key-glow-black 1s ease-in-out infinite;
 }
 
-@keyframes glow-black {
+@keyframes key-glow-black {
   0%,
   100% {
-    box-shadow: 0 4px 0 #17171f, 0 0 0 0 rgba(255, 140, 66, 0.55);
+    background: #6b4423;
   }
   50% {
-    box-shadow: 0 4px 0 #17171f, 0 0 0 10px rgba(255, 140, 66, 0);
+    background: #8a5a30;
   }
 }
 
