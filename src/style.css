@@ -179,8 +179,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  padding: 1.5rem 1.5rem 2rem;
+  gap: 1rem;
+  padding: 5rem 1.5rem 5rem;
 }
 
 .hero-icon {
@@ -207,7 +207,7 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--shelf-bg);
-  padding-top: 32px;
+  padding-top: 48px;
   overflow: hidden;
 }
 
