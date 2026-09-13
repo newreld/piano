@@ -29,7 +29,18 @@ function setAppHeight() {
 setAppHeight();
 window.addEventListener('resize', setAppHeight);
 window.addEventListener('orientationchange', setAppHeight);
+window.addEventListener('pageshow', setAppHeight);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) setAppHeight();
+});
 window.visualViewport?.addEventListener('resize', setAppHeight);
+window.visualViewport?.addEventListener('scroll', setAppHeight);
+// A standalone PWA launch on iPad can still report a transient
+// window.innerHeight before iOS finishes settling into its final
+// fullscreen size — none of the events above necessarily fire for that
+// (nothing "resizes" from the page's point of view). Re-measuring a few
+// times right after load catches the correction without polling forever.
+[50, 150, 300, 600, 1200].forEach((delay) => setTimeout(setAppHeight, delay));
 
 const RANGE_STORAGE_KEY = 'littlePiano.keyRangeValue';
 const SPEED_STORAGE_KEY = 'littlePiano.ballSpeedValue';

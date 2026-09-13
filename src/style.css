@@ -56,15 +56,20 @@ body {
      growing taller than the viewport and pushing those bands below the
      fold. 100dvh (dynamic viewport height) accounts for mobile browser
      chrome (address bar) that a plain 100vh can be taller than; the plain
-     100vh line is a fallback for browsers without dvh support.
-     var(--app-height, ...) overrides both with a JS-measured
+     100vh line is a fallback for browsers without dvh support. 100svh
+     (small viewport height — the stable lower bound, ignoring any
+     transient toolbar animation) tends to be more reliable than dvh
+     specifically in a standalone/fullscreen PWA, where there's no browser
+     chrome to dynamically show/hide in the first place.
+     var(--app-height, ...) overrides all three with a JS-measured
      window.innerHeight (see main.ts's setAppHeight) — installed as a PWA
-     on iPad, dvh/vh have a known bug where the value on first paint can be
-     wrong (too tall, leaving a dead gap below the keyboard) and only
-     self-corrects after a scroll or resize; measuring it directly in JS on
-     load sidesteps that entirely. */
+     on iPad, dvh/vh/svh have a known bug where the value on first paint
+     can still be wrong (leaving a dead gap below the keyboard, or below
+     the song grid) until something forces a recalculation; measuring it
+     directly in JS, more than once after load, sidesteps that entirely. */
   height: 100vh;
   height: 100dvh;
+  height: 100svh;
   height: var(--app-height, 100dvh);
   /* iPad PWA installs run edge-to-edge behind the status bar (clock,
      battery — apple-mobile-web-app-status-bar-style is black-translucent
@@ -614,7 +619,15 @@ img.card-icon {
 /* ---------- Completion banner ---------- */
 
 .complete-banner {
-  position: absolute;
+  /* fixed, not absolute: .play-screen's containing block is inset from
+     the true screen edges by #app's own safe-area padding (env(safe-
+     area-inset-*), keeping normal content off the iPad status bar/home
+     indicator) — an absolutely-positioned banner would only ever cover
+     that inset box, leaving the backdrop not actually dark right at the
+     top and bottom of the screen. A modal backdrop should dim the whole
+     screen regardless; fixed positioning escapes all the way to the
+     viewport instead of stopping at .play-screen's padded-in box. */
+  position: fixed;
   inset: 0;
   /* .piano-stage never establishes its own stacking context (position:
      relative with no z-index doesn't), so its .key-black's z-index:2 was

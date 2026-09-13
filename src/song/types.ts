@@ -127,7 +127,9 @@ export const SONG_LIBRARY: SongMeta[] = [
   },
   {
     id: 'when-the-saints',
-    title: { en: 'When the Saints Go Marching In', de: 'Wenn die Heiligen marschieren' },
+    // Kept in English for both locales — "Wenn die Heiligen marschieren"
+    // reads oddly as a title in German.
+    title: { en: 'When the Saints Go Marching In', de: 'When the Saints Go Marching In' },
     subtitle: traditional,
     emoji: '🎺',
     musicXmlUrl: `${base}songs/when-the-saints-go-marching-in.xml`,
@@ -153,13 +155,6 @@ export const SONG_LIBRARY: SongMeta[] = [
     subtitle: { en: 'Ludwig van Beethoven', de: 'Ludwig van Beethoven' },
     emoji: '💌',
     musicXmlUrl: `${base}songs/fur-elise.xml`,
-  },
-  {
-    id: 'canon-in-d',
-    title: { en: 'Canon in D', de: 'Kanon in D-Dur' },
-    subtitle: { en: 'Johann Pachelbel', de: 'Johann Pachelbel' },
-    emoji: '🎻',
-    musicXmlUrl: `${base}songs/canon-in-d.xml`,
   },
   {
     id: 'minuet-in-g',
