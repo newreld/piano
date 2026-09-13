@@ -613,12 +613,17 @@ img.card-icon {
 
 .key-black {
   position: absolute;
-  /* Extended 2px above its nominal top and taller by that same amount, so
-     .key-pressed's translateY(2px) has 2px of the key's own body to slide
-     into instead of uncovering a gap above it (revealing whatever's
-     underneath — the white key's own tint — for as long as it's held). */
-  top: -2px;
-  height: calc(60% + 2px);
+  /* Top-aligned with .key-white (both start flush at .keyboard's own top
+     edge) — it used to start 2px higher to give .key-pressed's
+     translateY(2px) some of the key's own body to slide into, but that
+     made black keys visibly stick up past the white keys' top edge at
+     rest. Traded that alignment bug for a much smaller one: pressing a
+     black key now reveals a sliver of the shelf background at its top for
+     as long as it's held (see .key-pressed) — kept as-is since it's a
+     minor, transient artifact only during a press, not worth the
+     complexity of a real fix. */
+  top: 0;
+  height: 60%;
   background: linear-gradient(to bottom, var(--key-black-top), var(--key-black-bottom));
   border: 1px solid #000;
   border-radius: 0 0 4px 4px;
