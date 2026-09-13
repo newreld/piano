@@ -125,6 +125,12 @@ export class Keyboard {
     if (pitch) this.keyEls.get(pitch)?.classList.add('key-expected');
   }
 
+  /** Faint "up next" outline on the key after the currently-expected one. */
+  setNext(pitch: string | null) {
+    for (const el of this.keyEls.values()) el.classList.remove('key-next');
+    if (pitch) this.keyEls.get(pitch)?.classList.add('key-next');
+  }
+
   flashSuccess(pitch: string) {
     const el = this.keyEls.get(pitch);
     if (!el) return;
@@ -144,8 +150,4 @@ export class Keyboard {
     return (keyRect.left + keyRect.width / 2 - boardRect.left) / boardRect.width;
   }
 
-  /** Actual rendered width (px) of a key, so the falling lane can match it exactly. */
-  keyWidthPx(pitch: string): number {
-    return this.keyEls.get(pitch)?.getBoundingClientRect().width ?? 0;
-  }
 }

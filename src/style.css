@@ -340,27 +340,18 @@ img.card-icon {
   background: var(--shelf-bg);
 }
 
+/* Matches .keyboard's own bounds exactly (not the wider shelf, which has
+   34px of padding above/below the keys) — per the source design, the
+   highlighted lane/token/ring cover exactly the key's own height, nothing
+   more: no padding above, no padding below. */
 .falling-area {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 32px;
+  height: var(--keyboard-h);
   /* Purely decorative — let taps pass through to the keyboard beneath it. */
   pointer-events: none;
-}
-
-/* Current-key lane: 10%-opacity fill + a 50%-opacity stroke (per spec). */
-.falling-lane {
-  position: absolute;
-  top: 0;
-  background: rgba(255, 98, 0, 0.1);
-  border: 1px solid rgba(255, 98, 0, 0.5);
-  border-radius: 16px 16px 0 0;
-}
-
-/* Next-key preview: same fill as the active lane, but a softer stroke and
-   a subtle top-inner-glow instead — "subtler than active" per spec. */
-.falling-lane-next {
-  border-color: rgba(255, 98, 0, 0.25);
-  box-shadow: inset 0 -10px 20px rgba(255, 98, 0, 0.15);
 }
 
 /* The landing zone: a persistent ring near the bottom of the active key —
@@ -428,7 +419,9 @@ img.card-icon {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  /* 32px gap below the keys within the shelf, per spec (the shelf itself
+     is keyboard-h + 34: 2px above the keys + 32px below). */
+  bottom: 32px;
   width: 100%;
   height: var(--keyboard-h);
 }
@@ -510,6 +503,14 @@ img.card-icon {
 
 .key-success.key-black {
   background: linear-gradient(to bottom, #2ec4b6, #1f8a80);
+}
+
+/* Next-note preview: unlike .key-expected, the key's own fill stays
+   untouched — only a soft outline appears, per the source design (the
+   next key's body keeps its normal white/black gradient, just its border
+   picks up a faint accent tint). */
+.key-next {
+  box-shadow: inset 0 0 0 2px rgba(255, 98, 0, 0.25);
 }
 
 /* ---------- Completion banner ---------- */

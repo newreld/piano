@@ -255,11 +255,13 @@ function showExpectedNote() {
   if (!note) return;
   keyboard.setExpected(note.pitch);
   const nextNote = currentNotes[currentIndex + 1];
-  fallingNotes.showNote(note.pitch, fallDurationFor(currentIndex), nextNote?.pitch);
+  keyboard.setNext(nextNote?.pitch ?? null);
+  fallingNotes.showNote(note.pitch, fallDurationFor(currentIndex));
 }
 
 function onSongComplete() {
   keyboard.setExpected(null);
+  keyboard.setNext(null);
   completeBanner.hidden = false;
   engine.playSuccessFanfare();
   const card = completeBanner.querySelector<HTMLElement>('.complete-card');
@@ -301,6 +303,7 @@ async function openFreePlay() {
   notationContainer.hidden = true;
   songTitleEl.textContent = 'Free Play';
   keyboard.setExpected(null);
+  keyboard.setNext(null);
 }
 
 function restartSong() {

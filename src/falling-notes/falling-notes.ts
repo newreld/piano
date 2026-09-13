@@ -23,15 +23,16 @@ export const TEMPO_OPTIONS: { label: string; bpm: number }[] = [
 ];
 
 /**
- * Renders a falling token that drops from the top of the shared piano-stage
- * area down into a landing-zone ring near the bottom of the key that's
- * about to be played. Position is recomputed every animation frame as a
- * function of the audio clock (not a wall-clock timer): if a frame is
- * skipped, the token just catches up next frame instead of drifting.
+ * Renders a falling token that drops from the top of the key down into a
+ * landing-zone ring near the bottom of the key that's about to be played.
+ * Position is recomputed every animation frame as a function of the audio
+ * clock (not a wall-clock timer): if a frame is skipped, the token just
+ * catches up next frame instead of drifting.
  *
- * Also renders a dimmer "next note" preview lane (no token/ring, just the
- * tinted key column) for the note after the current one, per the source
- * design's fainter secondary highlight — a one-note look-ahead.
+ * The "this key is expected/next" highlighting itself is NOT drawn here —
+ * per the source design, the key's own fill is what changes color (see
+ * Keyboard.setExpected/setNext), not a separate overlay shape sitting on
+ * top of the keyboard. This class only owns the token + its landing ring.
  *
  * IMPORTANT: this element and the Keyboard's element must be siblings
  * inside the same shared-width parent (see main.ts's `.piano-stage`) so a
@@ -46,12 +47,9 @@ export class FallingNotes {
   readonly el: HTMLDivElement;
   private keyboard: Keyboard;
   private now: () => number;
-  private lane: HTMLDivElement | null = null;
-  private nextLane: HTMLDivElement | null = null;
   private token: HTMLDivElement | null = null;
   private targetRing: HTMLDivElement | null = null;
   private activePitch: string | null = null;
-  private nextPitch: string | null = null;
   private startAudioTime = 0;
   private durationSeconds = 1;
 
@@ -65,31 +63,14 @@ export class FallingNotes {
     requestAnimationFrame(this.loop);
   }
 
-  /**
-   * @param durationSeconds how long the token takes to fall for THIS note
-   *   (driven by the song's rhythm — see main.ts's fallDurationFor).
-   * @param nextPitch the note after this one, if any — shown as a dim
-   *   preview lane with no token/ring.
-   */
-  showNote(pitch: string, durationSeconds: number, nextPitch?: string) {
+  /** @param durationSeconds how long the token takes to fall for THIS note
+   *   (driven by the song's rhythm — see main.ts's fallDurationFor). */
+  showNote(pitch: string, durationSeconds: number) {
     this.token?.remove();
-    this.lane?.remove();
-    this.nextLane?.remove();
     this.targetRing?.remove();
     this.activePitch = pitch;
-    this.nextPitch = nextPitch ?? null;
     this.durationSeconds = Math.max(durationSeconds, 0.15);
     this.startAudioTime = this.now();
-
-    this.lane = document.createElement('div');
-    this.lane.className = 'falling-lane';
-    this.el.appendChild(this.lane);
-
-    if (this.nextPitch) {
-      this.nextLane = document.createElement('div');
-      this.nextLane.className = 'falling-lane falling-lane-next';
-      this.el.appendChild(this.nextLane);
-    }
 
     this.targetRing = document.createElement('div');
     this.targetRing.className = 'target-ring';
@@ -107,15 +88,10 @@ export class FallingNotes {
       t.classList.add('token-pop');
       setTimeout(() => t.remove(), 250);
     }
-    this.lane?.remove();
-    this.nextLane?.remove();
     this.targetRing?.remove();
-    this.lane = null;
-    this.nextLane = null;
     this.targetRing = null;
     this.token = null;
     this.activePitch = null;
-    this.nextPitch = null;
   }
 
   private targetY(): number {
@@ -124,29 +100,15 @@ export class FallingNotes {
     return areaHeight - keyboardHeight * TARGET_FROM_BOTTOM_FRACTION;
   }
 
-  private positionLane(lane: HTMLDivElement, pitch: string, areaWidth: number, targetY: number) {
-    const xFrac = this.keyboard.keyCenterXFrac(pitch);
-    const centerX = xFrac * areaWidth;
-    // Match the actual key's width so the lane reads as "this key's
-    // column", not just a narrow stripe near the token.
-    const laneWidth = this.keyboard.keyWidthPx(pitch) || TOKEN_SIZE * 0.7;
-    lane.style.left = `${centerX - laneWidth / 2}px`;
-    lane.style.width = `${laneWidth}px`;
-    lane.style.height = `${targetY}px`;
-    return centerX;
-  }
-
   private loop = () => {
-    if (this.token && this.lane && this.targetRing && this.activePitch) {
+    if (this.token && this.targetRing && this.activePitch) {
       const elapsed = this.now() - this.startAudioTime;
       const progress = Math.min(1, Math.max(0, elapsed / this.durationSeconds));
       const areaWidth = this.el.clientWidth;
       const targetY = this.targetY();
 
-      const centerX = this.positionLane(this.lane, this.activePitch, areaWidth, targetY);
-      if (this.nextLane && this.nextPitch) {
-        this.positionLane(this.nextLane, this.nextPitch, areaWidth, targetY);
-      }
+      const xFrac = this.keyboard.keyCenterXFrac(this.activePitch);
+      const centerX = xFrac * areaWidth;
 
       const y = progress * (targetY - TOKEN_SIZE / 2);
       this.token.style.transform = `translate(${centerX - TOKEN_SIZE / 2}px, ${y}px)`;
