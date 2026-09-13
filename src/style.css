@@ -33,13 +33,22 @@
   -webkit-user-select: none;
 }
 
-html,
-body {
+html {
   height: 100%;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
+  /* Pinned directly to the true viewport (the initial containing block),
+     instead of a height:100% chained off html's own — no percentage or
+     viewport-unit math left for anything to disagree about. #app is the
+     one true source of the page's actual layout height (see its own
+     rule); this just guarantees body itself can never independently end
+     up shorter or taller than the real screen, or become scrollable. */
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
   font-family: var(--font-sans);
   background: var(--bg);
   color: var(--ink);
@@ -378,7 +387,7 @@ img.card-icon {
 .notation-container {
   width: 100%;
   max-width: 790px;
-  margin: 0 auto 0.5rem;
+  margin: 0 auto 3rem;
   padding: 0.75rem 1rem;
   display: flex;
   justify-content: center;
@@ -406,7 +415,16 @@ img.card-icon {
  * notation/title above it.
  */
 .piano-stage {
-  --keyboard-h: clamp(240px, 44vh, 400px);
+  /* calc(var(--app-height) * 0.44), not a plain 44vh: raw vh units are
+     exactly what's unreliable on iPad in standalone-PWA mode in the first
+     place (the same underlying bug --app-height's JS measurement exists
+     to route around, on #app itself) — using vh here would silently
+     reintroduce that bug for the keyboard specifically, sized from a
+     value that disagrees with #app's own (corrected) height. Falls back
+     to a real 100vh if --app-height isn't set yet (shouldn't normally
+     happen — main.ts sets it before first render — but keeps this safe
+     either way). */
+  --keyboard-h: clamp(240px, calc(var(--app-height, 100vh) * 0.44), 400px);
   position: relative;
   /* position:relative alone does NOT establish a stacking context, so a
      descendant's z-index (.key-black is 2) would otherwise escape this box
@@ -785,6 +803,7 @@ img.card-icon {
   }
 
   .notation-container {
+    margin-bottom: 0.75rem;
     padding: 0.35rem 0.5rem;
   }
 
@@ -793,7 +812,7 @@ img.card-icon {
        the viewport gets — lower it so the keyboard can keep shrinking
        along with everything else. min-height stays derived from this same
        variable (see the base rule), so it can never fall out of sync. */
-    --keyboard-h: clamp(120px, 44vh, 400px);
+    --keyboard-h: clamp(120px, calc(var(--app-height, 100vh) * 0.44), 400px);
     /* .play-screen's bottom padding shrank above — cancel the new value
        instead of the old 1.5rem, or the shelf drifts off the true bottom
        edge again. */

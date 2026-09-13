@@ -28,13 +28,28 @@ export default defineConfig(({ mode }) => ({
         description: 'Learn simple melodies on a friendly on-screen piano.',
         theme_color: '#e8834a',
         background_color: '#f7f4ee',
+        // fullscreen requests the whole physical screen with no reserved
+        // OS chrome at all; display_override lets us ask for that first
+        // and gracefully fall back to standalone (the base `display`
+        // below) wherever fullscreen isn't supported — an experiment for
+        // a reported iPad-only gap at the bottom of the installed app
+        // that's persisted through every CSS/JS viewport-height fix tried
+        // so far, which points at how iOS sizes the app's own frame for
+        // "standalone" launches specifically, not anything visible to the
+        // page itself.
+        display_override: ['fullscreen', 'standalone'],
         display: 'standalone',
         start_url: BASE,
         scope: BASE,
+        // A distinct source from icon-192/512.png (used for the favicon and
+        // in-app icon references, in main.ts's appIconUrl) — this one's a
+        // full-bleed square (no baked-in rounding/transparency) meant
+        // specifically for the OS to mask for the home screen/install
+        // prompt, per the user's separate "Piano Icon - APP" design asset.
         icons: [
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'pwa-icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
