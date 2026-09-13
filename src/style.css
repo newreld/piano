@@ -171,15 +171,16 @@ body {
 }
 
 .hero {
-  flex: 1;
-  min-height: 0;
+  /* No longer flex:1 — the shelf below is now the vertical-scrolling song
+     grid and needs most of the available height, so the hero just takes
+     its own compact natural size instead of stretching to fill whatever
+     was left over. */
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 0.4rem;
-  padding: 1.5rem;
-  overflow: hidden;
+  padding: 1.5rem 1.5rem 2rem;
 }
 
 .hero-icon {
@@ -197,17 +198,21 @@ body {
 }
 
 .shelf {
+  /* Now the primary scrollable region of the home screen (a vertical
+     song grid, not a single horizontal row) — it needs to actually claim
+     the vertical space .hero used to take, so it can show more than one
+     row before scrolling. */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--shelf-bg);
-  /* Only the top inset lives here now — left/right/bottom all belong to
-     .carousel instead (see below), since padding on .shelf itself sits
-     *outside* the scrollable element and so can never scroll away with
-     its content; owned by .carousel, the same inset becomes lead-in/
-     lead-out space that scrolls with the cards, and reveals more of the
-     shelf background at each end once you've scrolled past it. */
-  padding-top: 48px;
+  padding-top: 32px;
+  overflow: hidden;
 }
 
 .loading-notice {
+  flex: 0 0 auto;
   text-align: center;
   font-size: 1.05rem;
   font-weight: 600;
@@ -216,28 +221,21 @@ body {
 }
 
 .carousel {
-  display: flex;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  /* Fixed-width columns, as many as fit, centered as a block — same card
+     size as before, just wrapping into rows instead of one long line. */
+  grid-template-columns: repeat(auto-fill, 168px);
+  grid-auto-rows: 168px;
+  justify-content: center;
   gap: 32px;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  /* The section's own left/right/bottom padding, moved here from .shelf
-     so it scrolls away with the cards instead of framing them as fixed
-     chrome — see .shelf's comment above. */
+  overflow-y: auto;
   padding: 0 48px 48px;
-  /* Without this, scroll-snap treats the padding as outside the "safe"
-     snap area: on load (and after any scroll), it settles the first card
-     snapped flush against the container's edge — scrollLeft jumps straight
-     to 48px instead of resting at 0 — which skips right past the leading
-     padding and undoes the effect above. This tells snapping to treat the
-     padding itself as part of the snapport, so resting with the padding
-     visible is a valid (and the nearest) snap position. */
-  scroll-padding-inline: 48px;
   -webkit-overflow-scrolling: touch;
 }
 
 .card {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
   width: 168px;
   height: 168px;
   background: var(--card-bg);
@@ -259,12 +257,6 @@ body {
 }
 
 /* Thin separator after the Free Play card, before the song cards. */
-.carousel-divider {
-  flex: 0 0 auto;
-  width: 1px;
-  background: rgba(0, 0, 0, 0.1);
-}
-
 .card:active {
   transform: translateY(2px);
 }
@@ -275,20 +267,30 @@ body {
   transform: none;
 }
 
+/* Both icon variants (an emoji glyph for songs, the app icon <img> for Free
+   Play) are pinned to the same fixed height and set to block display, so
+   the title below always starts at the same y regardless of which kind of
+   icon sits above it — a text glyph and an <img> don't share the same
+   natural line-box height, which is exactly what let Free Play's title
+   sit noticeably closer to its icon than every other card's. */
 .card-icon {
+  height: 28px;
   font-size: 1.6rem;
+  line-height: 28px;
+  display: block;
 }
 
 img.card-icon {
   width: 28px;
   height: 28px;
   object-fit: contain;
+  display: block;
 }
 
 .card-title {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   color: var(--ink);
   line-height: 1.25;
   /* Cap at 2 lines so a long title (e.g. "Twinkle Twinkle Little Star")
@@ -305,6 +307,10 @@ img.card-icon {
   font-family: var(--font-sans);
   font-size: 0.82rem;
   color: var(--ink-muted);
+  /* Pins it to the card's bottom edge regardless of whether the title
+     above wrapped to one line or two — otherwise its position shifts
+     card to card depending on title length, which reads as uneven. */
+  margin-top: auto;
 }
 
 /* ---------- Play screen ---------- */
@@ -732,9 +738,10 @@ img.card-icon {
   }
 
   .carousel {
+    grid-template-columns: repeat(auto-fill, 120px);
+    grid-auto-rows: 120px;
     gap: 16px;
     padding: 0 16px 16px;
-    scroll-padding-inline: 16px;
   }
 
   .card {

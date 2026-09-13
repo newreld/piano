@@ -1,3 +1,5 @@
+import type { Localized } from '../i18n';
+
 export interface KeyRange {
   /** e.g. 4 for C4 */
   startOctave: number;
@@ -6,10 +8,10 @@ export interface KeyRange {
 
 export const DEFAULT_RANGE: KeyRange = { startOctave: 4, numOctaves: 1 };
 
-export const RANGE_OPTIONS: { label: string; range: KeyRange }[] = [
-  { label: '1 octave', range: { startOctave: 4, numOctaves: 1 } },
-  { label: '2 octaves', range: { startOctave: 4, numOctaves: 2 } },
-  { label: '3 octaves', range: { startOctave: 3, numOctaves: 3 } },
+export const RANGE_OPTIONS: { value: string; label: Localized; range: KeyRange }[] = [
+  { value: '1', label: { en: '1 octave', de: '1 Oktave' }, range: { startOctave: 4, numOctaves: 1 } },
+  { value: '2', label: { en: '2 octaves', de: '2 Oktaven' }, range: { startOctave: 4, numOctaves: 2 } },
+  { value: '3', label: { en: '3 octaves', de: '3 Oktaven' }, range: { startOctave: 3, numOctaves: 3 } },
 ];
 
 const STEP_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];

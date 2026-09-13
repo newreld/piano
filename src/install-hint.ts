@@ -1,3 +1,5 @@
+import { t, UI } from './i18n';
+
 const DISMISSED_KEY = 'littlePiano.installHintDismissed';
 
 function isIOS(): boolean {
@@ -40,11 +42,8 @@ export function mountInstallHint(container: HTMLElement) {
   const banner = document.createElement('div');
   banner.className = 'install-hint';
   banner.innerHTML = `
-    <span class="install-hint-text">
-      📲 For the best experience (offline play, full screen), add this to your Home Screen:
-      tap <strong>••• or Share</strong> in Safari's toolbar, then <strong>"Add to Home Screen."</strong>
-    </span>
-    <button class="install-hint-dismiss" aria-label="Dismiss">✕</button>
+    <span class="install-hint-text">${t(UI.installHintText)}</span>
+    <button class="install-hint-dismiss" aria-label="${t(UI.dismiss)}">✕</button>
   `;
   container.prepend(banner);
 

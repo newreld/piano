@@ -8,6 +8,8 @@ import { FallingNotes, TEMPO_OPTIONS, DEFAULT_BPM } from './falling-notes/fallin
 import { Notation } from './notation/notation';
 import { SONG_LIBRARY } from './song/types';
 import type { NoteEvent } from './song/types';
+import { t, UI } from './i18n';
+import type { Localized } from './i18n';
 
 // The app's own icon (design_src/Piano Icon.png, rasterized into
 // public/icon-*.png) — used wherever the design shows the app symbol,
@@ -29,22 +31,22 @@ window.addEventListener('resize', setAppHeight);
 window.addEventListener('orientationchange', setAppHeight);
 window.visualViewport?.addEventListener('resize', setAppHeight);
 
-const RANGE_STORAGE_KEY = 'littlePiano.keyRangeLabel';
-const SPEED_STORAGE_KEY = 'littlePiano.ballSpeedLabel';
+const RANGE_STORAGE_KEY = 'littlePiano.keyRangeValue';
+const SPEED_STORAGE_KEY = 'littlePiano.ballSpeedValue';
 
 function loadSavedRange(): KeyRange {
   try {
-    const savedLabel = localStorage.getItem(RANGE_STORAGE_KEY);
-    const found = RANGE_OPTIONS.find((o) => o.label === savedLabel);
+    const savedValue = localStorage.getItem(RANGE_STORAGE_KEY);
+    const found = RANGE_OPTIONS.find((o) => o.value === savedValue);
     return found ? found.range : DEFAULT_RANGE;
   } catch {
     return DEFAULT_RANGE;
   }
 }
 
-function saveRange(label: string) {
+function saveRange(value: string) {
   try {
-    localStorage.setItem(RANGE_STORAGE_KEY, label);
+    localStorage.setItem(RANGE_STORAGE_KEY, value);
   } catch {
     // ignore (e.g. private browsing storage restrictions)
   }
@@ -52,26 +54,26 @@ function saveRange(label: string) {
 
 function loadSavedBpm(): number {
   try {
-    const savedLabel = localStorage.getItem(SPEED_STORAGE_KEY);
-    const found = TEMPO_OPTIONS.find((o) => o.label === savedLabel);
+    const savedValue = localStorage.getItem(SPEED_STORAGE_KEY);
+    const found = TEMPO_OPTIONS.find((o) => o.value === savedValue);
     return found ? found.bpm : DEFAULT_BPM;
   } catch {
     return DEFAULT_BPM;
   }
 }
 
-function saveSpeed(label: string) {
+function saveSpeed(value: string) {
   try {
-    localStorage.setItem(SPEED_STORAGE_KEY, label);
+    localStorage.setItem(SPEED_STORAGE_KEY, value);
   } catch {
     // ignore (e.g. private browsing storage restrictions)
   }
 }
 
 /** Builds a "N options, one active" segmented control. Returns the element and a setter to sync active state from outside (e.g. on load). */
-function buildSegmented<T extends { label: string }>(
+function buildSegmented<T extends { value: string; label: Localized }>(
   options: T[],
-  initialLabel: string,
+  initialValue: string,
   onSelect: (opt: T) => void,
 ): HTMLDivElement {
   const el = document.createElement('div');
@@ -79,8 +81,8 @@ function buildSegmented<T extends { label: string }>(
   options.forEach((opt) => {
     const btn = document.createElement('button');
     btn.className = 'segmented-btn';
-    btn.textContent = opt.label;
-    btn.classList.toggle('segmented-btn-active', opt.label === initialLabel);
+    btn.textContent = t(opt.label);
+    btn.classList.toggle('segmented-btn-active', opt.value === initialValue);
     btn.addEventListener('click', () => {
       el.querySelectorAll('.segmented-btn').forEach((b) => b.classList.remove('segmented-btn-active'));
       btn.classList.add('segmented-btn-active');
@@ -110,7 +112,7 @@ const rangeRow = document.createElement('div');
 rangeRow.className = 'picker-row';
 const rangeRowLabel = document.createElement('span');
 rangeRowLabel.className = 'picker-row-label';
-rangeRowLabel.textContent = 'Keyboard';
+rangeRowLabel.textContent = t(UI.keyboardLabel);
 rangeRow.appendChild(rangeRowLabel);
 topBar.appendChild(rangeRow);
 
@@ -118,13 +120,13 @@ const speedRow = document.createElement('div');
 speedRow.className = 'picker-row';
 const speedRowLabel = document.createElement('span');
 speedRowLabel.className = 'picker-row-label';
-speedRowLabel.textContent = 'Tempo';
+speedRowLabel.textContent = t(UI.tempoLabel);
 speedRow.appendChild(speedRowLabel);
 topBar.appendChild(speedRow);
 
 const hero = document.createElement('div');
 hero.className = 'hero';
-hero.innerHTML = `<img class="hero-icon" src="${appIconUrl}" alt="" /><h1 class="hero-title">Piano</h1>`;
+hero.innerHTML = `<img class="hero-icon" src="${appIconUrl}" alt="" /><h1 class="hero-title">${t(UI.heroTitle)}</h1>`;
 homeScreen.appendChild(hero);
 
 const shelf = document.createElement('div');
@@ -133,7 +135,7 @@ homeScreen.appendChild(shelf);
 
 const loadingNotice = document.createElement('div');
 loadingNotice.className = 'loading-notice';
-loadingNotice.textContent = '🎹 Loading piano sounds…';
+loadingNotice.textContent = t(UI.loadingPianoSounds);
 shelf.appendChild(loadingNotice);
 
 const carousel = document.createElement('div');
@@ -143,13 +145,9 @@ shelf.appendChild(carousel);
 const freePlayCard = document.createElement('button');
 freePlayCard.className = 'card';
 freePlayCard.disabled = true;
-freePlayCard.innerHTML = `<img class="card-icon" src="${appIconUrl}" alt="" /><div class="card-title">Piano</div><div class="card-subtitle">Free Play</div>`;
+freePlayCard.innerHTML = `<img class="card-icon" src="${appIconUrl}" alt="" /><div class="card-title">${t(UI.heroTitle)}</div><div class="card-subtitle">${t(UI.freePlay)}</div>`;
 freePlayCard.addEventListener('click', () => openFreePlay());
 carousel.appendChild(freePlayCard);
-
-const divider = document.createElement('div');
-divider.className = 'carousel-divider';
-carousel.appendChild(divider);
 
 const cardButtons: HTMLButtonElement[] = [freePlayCard];
 
@@ -157,7 +155,7 @@ SONG_LIBRARY.forEach((song) => {
   const card = document.createElement('button');
   card.className = 'card';
   card.disabled = true;
-  card.innerHTML = `<div class="card-icon">${song.emoji}</div><div class="card-title">${song.title}</div><div class="card-subtitle">${song.subtitle}</div>`;
+  card.innerHTML = `<div class="card-icon">${song.emoji}</div><div class="card-title">${t(song.title)}</div><div class="card-subtitle">${t(song.subtitle)}</div>`;
   card.addEventListener('click', () => openSong(song.id));
   carousel.appendChild(card);
   cardButtons.push(card);
@@ -177,7 +175,7 @@ playScreen.appendChild(songHeader);
 const homeIconBtn = document.createElement('button');
 homeIconBtn.className = 'song-header-emoji';
 homeIconBtn.innerHTML = `<img src="${appIconUrl}" alt="" />`;
-homeIconBtn.setAttribute('aria-label', 'Back to songs');
+homeIconBtn.setAttribute('aria-label', t(UI.backToSongs));
 songHeader.appendChild(homeIconBtn);
 
 const songTitleEl = document.createElement('h2');
@@ -206,10 +204,10 @@ const completeBanner = document.createElement('div');
 completeBanner.className = 'complete-banner';
 completeBanner.hidden = true;
 completeBanner.innerHTML = `<div class="complete-card">
-  <div class="complete-text">Well done!</div>
+  <div class="complete-text">${t(UI.wellDone)}</div>
   <div class="complete-actions">
-    <button class="btn-primary" id="play-again-btn">Play again</button>
-    <button class="btn-secondary" id="choose-song-btn">Choose another song</button>
+    <button class="btn-primary" id="play-again-btn">${t(UI.playAgain)}</button>
+    <button class="btn-secondary" id="choose-song-btn">${t(UI.chooseAnotherSong)}</button>
   </div>
 </div>`;
 playScreen.appendChild(completeBanner);
@@ -227,21 +225,29 @@ const keyboard = new Keyboard(pianoStage, initialRange);
 const fallingNotes = new FallingNotes(pianoStage, keyboard, () => engine.now());
 const notation = new Notation(notationContainer);
 
-const initialRangeLabel = RANGE_OPTIONS.find((o) => o.range === initialRange)?.label ?? RANGE_OPTIONS[0].label;
+// Every song is composed to fit within one octave, so widening the range
+// during a song never unlocks anything real — it just spreads the same
+// keys thinner across the same width, making the target key harder to
+// hit. The picker (only ever visible on the home screen, never during a
+// song or Free Play) only ever governs Free Play's range; songs always
+// force one octave, applied in openSong() below.
+let freePlayRange = initialRange;
+
+const initialRangeValue = RANGE_OPTIONS.find((o) => o.range === initialRange)?.value ?? RANGE_OPTIONS[0].value;
 rangeRow.appendChild(
-  buildSegmented(RANGE_OPTIONS, initialRangeLabel, ({ range, label }) => {
-    keyboard.setRange(range);
-    saveRange(label);
+  buildSegmented(RANGE_OPTIONS, initialRangeValue, ({ range, value }) => {
+    freePlayRange = range;
+    saveRange(value);
   }),
 );
 
 const initialBpm = loadSavedBpm();
 let secondsPerBeat = 60 / initialBpm;
-const initialSpeedLabel = TEMPO_OPTIONS.find((o) => o.bpm === initialBpm)?.label ?? TEMPO_OPTIONS[1].label;
+const initialSpeedValue = TEMPO_OPTIONS.find((o) => o.bpm === initialBpm)?.value ?? TEMPO_OPTIONS[1].value;
 speedRow.appendChild(
-  buildSegmented(TEMPO_OPTIONS, initialSpeedLabel, ({ bpm, label }) => {
+  buildSegmented(TEMPO_OPTIONS, initialSpeedValue, ({ bpm, value }) => {
     secondsPerBeat = 60 / bpm;
-    saveSpeed(label);
+    saveSpeed(value);
   }),
 );
 
@@ -305,8 +311,9 @@ async function openSong(id: string) {
   await engine.start();
 
   enterPlayScreen();
+  keyboard.setRange(DEFAULT_RANGE);
   notationContainer.hidden = false;
-  songTitleEl.textContent = meta.title;
+  songTitleEl.textContent = t(meta.title);
 
   currentNotes = await notation.load(meta.musicXmlUrl);
   currentIndex = 0;
@@ -318,8 +325,9 @@ async function openFreePlay() {
   await engine.start();
 
   enterPlayScreen();
+  keyboard.setRange(freePlayRange);
   notationContainer.hidden = true;
-  songTitleEl.textContent = 'Free Play';
+  songTitleEl.textContent = t(UI.freePlay);
   keyboard.setExpected(null);
   keyboard.setNext(null);
   fallingNotes.clear();

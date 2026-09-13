@@ -1,4 +1,5 @@
 import type { Keyboard } from '../keyboard/keyboard';
+import type { Localized } from '../i18n';
 
 // Exact sizes from the user's design spec (design_src/Piano App.svg —
 // "Highlight States" panel: "Glow dot: 32x32px", "Key note indicator:
@@ -16,10 +17,10 @@ const TARGET_FROM_BOTTOM_FRACTION = 0.157;
 
 export const DEFAULT_BPM = 100;
 
-export const TEMPO_OPTIONS: { label: string; bpm: number }[] = [
-  { label: 'Slower', bpm: 70 },
-  { label: 'Normal', bpm: DEFAULT_BPM },
-  { label: 'Faster', bpm: 140 },
+export const TEMPO_OPTIONS: { value: string; label: Localized; bpm: number }[] = [
+  { value: 'slower', label: { en: 'Slower', de: 'Langsamer' }, bpm: 70 },
+  { value: 'normal', label: { en: 'Normal', de: 'Normal' }, bpm: DEFAULT_BPM },
+  { value: 'faster', label: { en: 'Faster', de: 'Schneller' }, bpm: 140 },
 ];
 
 /**
