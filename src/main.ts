@@ -142,7 +142,7 @@ SONG_LIBRARY.forEach((song) => {
   const card = document.createElement('button');
   card.className = 'card';
   card.disabled = true;
-  card.innerHTML = `<div class="card-icon">🎵</div><div class="card-title">${song.title}</div><div class="card-subtitle">${song.subtitle}</div>`;
+  card.innerHTML = `<div class="card-icon">${song.emoji}</div><div class="card-title">${song.title}</div><div class="card-subtitle">${song.subtitle}</div>`;
   card.addEventListener('click', () => openSong(song.id));
   carousel.appendChild(card);
   cardButtons.push(card);
