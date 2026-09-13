@@ -28,7 +28,13 @@ const base = import.meta.env.BASE_URL;
 
 export const SONG_LIBRARY: SongMeta[] = [
   { id: 'twinkle-twinkle', title: 'Twinkle Twinkle Little Star', subtitle: 'Traditional', musicXmlUrl: `${base}songs/twinkle-twinkle.xml` },
-  { id: 'hot-cross-buns', title: 'Hot Cross Buns', subtitle: 'Traditional', musicXmlUrl: `${base}songs/hot-cross-buns.xml` },
-  { id: 'mary-had-a-little-lamb', title: 'Mary Had a Little Lamb', subtitle: 'Traditional', musicXmlUrl: `${base}songs/mary-had-a-little-lamb.xml` },
+  { id: 'frere-jacques', title: 'Frère Jacques (Are You Sleeping)', subtitle: 'Traditional', musicXmlUrl: `${base}songs/frere-jacques.xml` },
+  { id: 'jingle-bells', title: 'Jingle Bells', subtitle: 'J. Pierpont', musicXmlUrl: `${base}songs/jingle-bells.xml` },
+  { id: 'happy-birthday', title: 'Happy Birthday to You', subtitle: 'Traditional', musicXmlUrl: `${base}songs/happy-birthday.xml` },
+  { id: 'wheels-on-the-bus', title: 'The Wheels on the Bus', subtitle: 'Traditional', musicXmlUrl: `${base}songs/wheels-on-the-bus.xml` },
+  { id: 'hush-little-baby', title: 'Hush Little Baby', subtitle: 'Traditional', musicXmlUrl: `${base}songs/hush-little-baby.xml` },
+  { id: 'when-the-saints', title: 'When the Saints Go Marching In', subtitle: 'Traditional', musicXmlUrl: `${base}songs/when-the-saints-go-marching-in.xml` },
+  { id: 'amazing-grace', title: 'Amazing Grace', subtitle: 'John Newton', musicXmlUrl: `${base}songs/amazing-grace.xml` },
+  { id: 'silent-night', title: 'Silent Night', subtitle: 'Franz Gruber', musicXmlUrl: `${base}songs/silent-night.xml` },
   { id: 'ode-to-joy', title: 'Ode to Joy (Simplified)', subtitle: 'Beethoven', musicXmlUrl: `${base}songs/ode-to-joy.xml` },
 ];

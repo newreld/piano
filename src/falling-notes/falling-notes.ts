@@ -94,6 +94,16 @@ export class FallingNotes {
     this.activePitch = null;
   }
 
+  /** Removes any token/ring immediately, no pop animation — for leaving a
+   *  song mid-way (e.g. switching to Free Play), not for a correct hit. */
+  clear() {
+    this.token?.remove();
+    this.targetRing?.remove();
+    this.token = null;
+    this.targetRing = null;
+    this.activePitch = null;
+  }
+
   private targetY(): number {
     const areaHeight = this.el.clientHeight;
     const keyboardHeight = this.keyboard.el.clientHeight;
@@ -112,7 +122,6 @@ export class FallingNotes {
 
       const y = progress * (targetY - TOKEN_SIZE / 2);
       this.token.style.transform = `translate(${centerX - TOKEN_SIZE / 2}px, ${y}px)`;
-      this.token.classList.toggle('falling-token-waiting', progress >= 1);
 
       this.targetRing.style.transform = `translate(${centerX - TARGET_RING_SIZE / 2}px, ${targetY - TARGET_RING_SIZE / 2}px)`;
     }

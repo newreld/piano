@@ -131,17 +131,6 @@ export class Keyboard {
     if (pitch) this.keyEls.get(pitch)?.classList.add('key-next');
   }
 
-  flashSuccess(pitch: string) {
-    const el = this.keyEls.get(pitch);
-    if (!el) return;
-    // Drop the expected-glow immediately so it doesn't fight the success
-    // flash for the same `background` property while both are momentarily
-    // present (the next note's glow lands on its own key ~350ms later).
-    el.classList.remove('key-expected');
-    el.classList.add('key-success');
-    setTimeout(() => el.classList.remove('key-success'), 300);
-  }
-
   keyCenterXFrac(pitch: string): number {
     const el = this.keyEls.get(pitch);
     if (!el) return 0;

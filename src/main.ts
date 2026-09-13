@@ -191,7 +191,6 @@ const completeBanner = document.createElement('div');
 completeBanner.className = 'complete-banner';
 completeBanner.hidden = true;
 completeBanner.innerHTML = `<div class="complete-card">
-  <div class="complete-emoji">🌟</div>
   <div class="complete-text">Well done!</div>
   <div class="complete-actions">
     <button class="btn-primary" id="play-again-btn">Play again</button>
@@ -262,10 +261,14 @@ function showExpectedNote() {
 function onSongComplete() {
   keyboard.setExpected(null);
   keyboard.setNext(null);
-  completeBanner.hidden = false;
-  engine.playSuccessFanfare();
-  const card = completeBanner.querySelector<HTMLElement>('.complete-card');
-  if (card) burstConfetti(card);
+  // A beat of silence before the "Well done!" card appears — showing it the
+  // instant the last note is hit feels abrupt and its own fanfare sound
+  // would just collide with that last note still ringing out.
+  setTimeout(() => {
+    completeBanner.hidden = false;
+    const card = completeBanner.querySelector<HTMLElement>('.complete-card');
+    if (card) burstConfetti(card);
+  }, 500);
 }
 
 function showHome() {
@@ -304,6 +307,7 @@ async function openFreePlay() {
   songTitleEl.textContent = 'Free Play';
   keyboard.setExpected(null);
   keyboard.setNext(null);
+  fallingNotes.clear();
 }
 
 function restartSong() {
@@ -321,7 +325,6 @@ keyboard.setOnPress((pitch) => {
   const expected = currentNotes[currentIndex];
   if (pitch !== expected.pitch) return;
 
-  keyboard.flashSuccess(pitch);
   fallingNotes.pop();
   notation.advance();
 

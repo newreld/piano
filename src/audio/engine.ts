@@ -74,14 +74,4 @@ export class AudioEngine {
     if (!this.loaded) return;
     this.sampler.triggerAttackRelease(pitch, duration, Tone.now());
   }
-
-  /** A short cheerful ascending arpeggio for finishing a song. */
-  playSuccessFanfare() {
-    if (!this.loaded) return;
-    const notes = ['C5', 'E5', 'G5', 'C6'];
-    const now = Tone.now();
-    notes.forEach((note, i) => {
-      this.sampler.triggerAttackRelease(note, '8n', now + i * 0.12);
-    });
-  }
 }
