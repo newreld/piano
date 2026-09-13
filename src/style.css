@@ -56,9 +56,23 @@ body {
      growing taller than the viewport and pushing those bands below the
      fold. 100dvh (dynamic viewport height) accounts for mobile browser
      chrome (address bar) that a plain 100vh can be taller than; the plain
-     100vh line is a fallback for browsers without dvh support. */
+     100vh line is a fallback for browsers without dvh support.
+     var(--app-height, ...) overrides both with a JS-measured
+     window.innerHeight (see main.ts's setAppHeight) — installed as a PWA
+     on iPad, dvh/vh have a known bug where the value on first paint can be
+     wrong (too tall, leaving a dead gap below the keyboard) and only
+     self-corrects after a scroll or resize; measuring it directly in JS on
+     load sidesteps that entirely. */
   height: 100vh;
   height: 100dvh;
+  height: var(--app-height, 100dvh);
+  /* iPad PWA installs run edge-to-edge behind the status bar (clock,
+     battery — apple-mobile-web-app-status-bar-style is black-translucent
+     in index.html, which draws under it rather than pushing it down), so
+     without this the top bar renders right underneath the status bar
+     icons. viewport-fit=cover (also in index.html) is what makes these
+     env() values resolve to anything other than 0. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   display: flex;
   flex-direction: column;
   align-items: stretch;

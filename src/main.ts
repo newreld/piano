@@ -14,6 +14,21 @@ import type { NoteEvent } from './song/types';
 // rather than the 🎹 emoji glyph.
 const appIconUrl = `${import.meta.env.BASE_URL}icon-192.png`;
 
+// #app's height reads this custom property before falling back to 100dvh
+// (see style.css). Installed as a PWA on iPad, 100dvh/100vh have a known
+// WebKit bug where the value on first paint can be measured too tall —
+// leaving a dead gap below the keyboard/shelf until something (a scroll, a
+// resize) forces a recalculation. Measuring window.innerHeight directly in
+// JS avoids that first-paint bug outright, and covers real size changes
+// (rotating the iPad, the on-screen keyboard opening) the same way.
+function setAppHeight() {
+  document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+}
+setAppHeight();
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', setAppHeight);
+window.visualViewport?.addEventListener('resize', setAppHeight);
+
 const RANGE_STORAGE_KEY = 'littlePiano.keyRangeLabel';
 const SPEED_STORAGE_KEY = 'littlePiano.ballSpeedLabel';
 
