@@ -16,32 +16,6 @@ import type { Localized } from './i18n';
 // rather than the 🎹 emoji glyph.
 const appIconUrl = `${import.meta.env.BASE_URL}icon-192.png`;
 
-// #app's height reads this custom property before falling back to 100dvh
-// (see style.css). Installed as a PWA on iPad, 100dvh/100vh have a known
-// WebKit bug where the value on first paint can be measured too tall —
-// leaving a dead gap below the keyboard/shelf until something (a scroll, a
-// resize) forces a recalculation. Measuring window.innerHeight directly in
-// JS avoids that first-paint bug outright, and covers real size changes
-// (rotating the iPad, the on-screen keyboard opening) the same way.
-function setAppHeight() {
-  document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
-}
-setAppHeight();
-window.addEventListener('resize', setAppHeight);
-window.addEventListener('orientationchange', setAppHeight);
-window.addEventListener('pageshow', setAppHeight);
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) setAppHeight();
-});
-window.visualViewport?.addEventListener('resize', setAppHeight);
-window.visualViewport?.addEventListener('scroll', setAppHeight);
-// A standalone PWA launch on iPad can still report a transient
-// window.innerHeight before iOS finishes settling into its final
-// fullscreen size — none of the events above necessarily fire for that
-// (nothing "resizes" from the page's point of view). Re-measuring a few
-// times right after load catches the correction without polling forever.
-[50, 150, 300, 600, 1200].forEach((delay) => setTimeout(setAppHeight, delay));
-
 const RANGE_STORAGE_KEY = 'littlePiano.keyRangeValue';
 const SPEED_STORAGE_KEY = 'littlePiano.ballSpeedValue';
 

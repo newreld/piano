@@ -63,23 +63,17 @@ body {
      the viewport, with the flex:1 area above them (.hero, the play-screen
      header+notation) compressing to make room — instead of the page
      growing taller than the viewport and pushing those bands below the
-     fold. 100dvh (dynamic viewport height) accounts for mobile browser
-     chrome (address bar) that a plain 100vh can be taller than; the plain
-     100vh line is a fallback for browsers without dvh support. 100svh
-     (small viewport height — the stable lower bound, ignoring any
-     transient toolbar animation) tends to be more reliable than dvh
-     specifically in a standalone/fullscreen PWA, where there's no browser
-     chrome to dynamically show/hide in the first place.
-     var(--app-height, ...) overrides all three with a JS-measured
-     window.innerHeight (see main.ts's setAppHeight) — installed as a PWA
-     on iPad, dvh/vh/svh have a known bug where the value on first paint
-     can still be wrong (leaving a dead gap below the keyboard, or below
-     the song grid) until something forces a recalculation; measuring it
-     directly in JS, more than once after load, sidesteps that entirely. */
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
-  height: var(--app-height, 100dvh);
+     fold. Deliberately 100% (of body), not a vh/dvh/svh unit: those units
+     are notoriously unreliable on iOS Safari — measured wrong on first
+     paint, and/or frozen at a stale value when the toolbar auto-hides
+     from scrolling a nested scrollable element (our song grid) rather
+     than the page itself, leaving dead space below the keyboard or grid
+     with nothing to prompt a recalculation. body is pinned directly to
+     the true viewport via position:fixed;inset:0 (see body's own rule) —
+     that binding is live and correct through every one of those
+     transitions with no JS needed, so #app just inherits it as a plain
+     percentage. */
+  height: 100%;
   /* iPad PWA installs run edge-to-edge behind the status bar (clock,
      battery — apple-mobile-web-app-status-bar-style is black-translucent
      in index.html, which draws under it rather than pushing it down), so
@@ -438,16 +432,19 @@ img.card-icon {
  * notation/title above it.
  */
 .piano-stage {
-  /* calc(var(--app-height) * 0.44), not a plain 44vh: raw vh units are
-     exactly what's unreliable on iPad in standalone-PWA mode in the first
-     place (the same underlying bug --app-height's JS measurement exists
-     to route around, on #app itself) — using vh here would silently
-     reintroduce that bug for the keyboard specifically, sized from a
-     value that disagrees with #app's own (corrected) height. Falls back
-     to a real 100vh if --app-height isn't set yet (shouldn't normally
-     happen — main.ts sets it before first render — but keeps this safe
-     either way). */
-  --keyboard-h: clamp(240px, calc(var(--app-height, 100vh) * 0.44), 400px);
+  /* container-type:size makes .piano-stage a query container, so cqh below
+     means "% of THIS box's own height" — resolved natively by the browser
+     off its actual laid-out size, live, with no vh/dvh unit and no JS
+     measurement involved (unlike the old calc(var(--app-height)*0.44),
+     which depended on main.ts's JS-measured height variable). This works
+     because none of .piano-stage's OWN sizing (below: flex + a plain px
+     min-height) depends on cqh — only its descendants (.keyboard,
+     .piano-stage-shelf, .falling-area) consume var(--keyboard-h). An
+     element can't use its own container's query units to size itself
+     (circular), but it can freely host a container that its children
+     query. */
+  container-type: size;
+  --keyboard-h: clamp(240px, 44cqh, 400px);
   position: relative;
   /* position:relative alone does NOT establish a stacking context, so a
      descendant's z-index (.key-black is 2) would otherwise escape this box
@@ -461,12 +458,14 @@ img.card-icon {
   margin: 0 -1rem -1.5rem;
   flex: 1;
   /* Must always be at least as tall as .piano-stage-shelf itself
-     (keyboard-h + 34) — a plain px guess here can drift out of sync with
-     --keyboard-h's own clamp (which is exactly what happened: the shelf
-     ended up taller than this box and crept upward, overlapping the
-     notation above it). Deriving it from the same variable makes that
-     impossible by construction. */
-  min-height: calc(var(--keyboard-h) + 34px);
+     (keyboard-h's own 240px floor + 34) — a literal pixel value, not
+     derived from --keyboard-h: since --keyboard-h is itself expressed in
+     cqh relative to THIS element, feeding it back into this same
+     element's own min-height would be circular (and unsupported). 240+34
+     is chosen to exactly match --keyboard-h's clamp() floor above, so the
+     two stay in sync by construction — if that floor ever changes, this
+     needs to change with it. */
+  min-height: 274px;
   /* No max-height. It used to be capped at a plain 720px, which on any
      viewport tall enough to have more flex space available than that (a
      normal desktop window, not just a phone/tablet) left the box smaller
@@ -834,9 +833,10 @@ img.card-icon {
   .piano-stage {
     /* The default clamp's 240px floor never shrinks no matter how short
        the viewport gets — lower it so the keyboard can keep shrinking
-       along with everything else. min-height stays derived from this same
-       variable (see the base rule), so it can never fall out of sync. */
-    --keyboard-h: clamp(120px, calc(var(--app-height, 100vh) * 0.44), 400px);
+       along with everything else. min-height below is updated to match
+       (120+34) for the same reason the base rule's is 240+34 — see there. */
+    --keyboard-h: clamp(120px, 44cqh, 400px);
+    min-height: 154px;
     /* .play-screen's bottom padding shrank above — cancel the new value
        instead of the old 1.5rem, or the shelf drifts off the true bottom
        edge again. */
